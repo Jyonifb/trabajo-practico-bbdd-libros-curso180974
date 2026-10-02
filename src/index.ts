@@ -1,7 +1,7 @@
 import mongoose from "mongoose"
 process.loadEnvFile()
 
-import {MongoClient, ObjectId} from "mongodb"
+//import {MongoClient, ObjectId} from "mongodb"
 
 const URI_DB = process.env.URI_DB || ""
 
@@ -14,9 +14,10 @@ const connectDb = async (URI: string) => {
   }
 }
 
-connectDb(URI_DB)
+//connectDb(URI_DB)
 
-const client = new MongoClient("mongodb://localhost:27017")
+
+/*const client = new MongoClient("mongodb://localhost:27017")
 
 const db = client.db("biblioteca")
 const collection = db.collection("libros")
@@ -96,4 +97,4 @@ switch  (accion) {
     default:
         console.log("Comando inexistente, utilice Help para ver opciones")
 }
-
+*/
