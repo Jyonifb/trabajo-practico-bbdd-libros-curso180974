@@ -1,5 +1,5 @@
 import {connect} from "mongoose"
-import {MongoClient} from "mongodb"
+import {MongoClient, ObjectId} from "mongodb"
 
 const connectMongoDb = async () => {
    try{
@@ -27,10 +27,38 @@ const leerLibros = async () => {
  return libros
 }
 
+const agregarLibro = async (titulo: string, autor: string, precio: number, stock: number) => {
+   const nuevoLibro = {titulo, autor, stock, precio}
+   const resultado = await collection.insertOne(nuevoLibro)
+   return collection.findOne({_id: new ObjectId(resultado.insertedId) })
+}
+
 switch  (accion) {
-    case "read":
-        const respuesta = await leerLibros()
-        console.log(respuesta)
+     case "help":
+                console.log(`
+            create data -> para crear libro
+            read -> para leer libros
+            update id -> para actualizar libro
+            delete id -> para borrar libro 
+        `)
         break
+    case "create":
+        const titulo = argumentos[1]
+        const autor = argumentos[2]
+        const precio = +argumentos[3]
+        const stock = +argumentos[4]   
+        console.log(await agregarLibro(titulo, autor, precio, stock))
+        process.exit(1)
+    case "read":
+        console.log(await leerLibros())
+        process.exit(1)
+    case "update":
+        console.log("Actualizando Libro")
+        process.exit(1)
+    case "delete":
+        console.log("Borrando Libro")
+        process.exit(1)
+    default:
+        console.log("Comando inexistente, utilice Help para ver opciones")
 }
 
