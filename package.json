@@ -1,0 +1,20 @@
+{
+  "name": "trabajo-practico-db-biblioteca-180974-jb",
+  "version": "1.0.0",
+  "description": "Un simple proyecto de biblioteca para gestionar libros y usuarios",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "node --watch ./src/index.ts",
+    "start": "node ./dist/index.js",
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "mongoose": "^9.10.3"
+  }
+}
