@@ -1,4 +1,5 @@
 import mongoose from "mongoose"
+import { disconnect } from "node:cluster"
 process.loadEnvFile()
 
 //import {MongoClient, ObjectId} from "mongodb"
@@ -16,7 +17,53 @@ const connectDb = async (URI: string) => {
 
 //connectDb(URI_DB)
 
+const args = process.argv.splice(2)
+const action = args[0]
 
+
+interface ILibro {
+  titulo: string
+  autor: string
+  precio: number
+  stock: number
+}
+
+const libroSchema = new mongoose.Schema<ILibro>( {
+  titulo: String,
+  autor: String,
+  precio: Number,
+  stock: Number
+})
+
+const Libro = mongoose.model("libro", libroSchema)
+
+
+
+const getLibros = async () => {
+    return await Libro.find()
+} 
+
+const main = async () => {
+    connectDb(URI_DB)
+
+    switch (action) {
+        case "info":
+            console.log(`
+                read → para leer los productos
+                create data → para crear un producto
+                update id data → para actualizar un producto
+                delete id → para borrar un producto
+            `)
+        break
+        case "read":
+            console.log(await getLibros())
+        break
+    }
+
+    await mongoose.disconnect()
+}
+
+main()
 /*const client = new MongoClient("mongodb://localhost:27017")
 
 const db = client.db("biblioteca")
