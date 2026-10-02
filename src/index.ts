@@ -1,18 +1,20 @@
-import {connect} from "mongoose"
+import mongoose from "mongoose"
+process.loadEnvFile()
+
 import {MongoClient, ObjectId} from "mongodb"
 
-const connectMongoDb = async () => {
-   try{
-        await connect("mongodb://localhost:27017")
-        console.log("Conectado con Exito!")
+const URI_DB = process.env.URI_DB || ""
 
-   }
-   catch (error){
-        console.log("Error al Conectarse a MongoDb")
-   }     
+const connectDb = async (URI: string) => {
+  try {
+    await mongoose.connect(URI)
+    console.log("Conectado a MongoDb con éxito :)")
+  } catch (e) {
+    console.log(`Error al conectar a MongoDb :(`)
+  }
 }
 
-//connectMongoDb()
+connectDb(URI_DB)
 
 const client = new MongoClient("mongodb://localhost:27017")
 
@@ -38,6 +40,34 @@ const borrarLibro = async (id: ObjectId) => {
     return await collection.deleteOne({ _id: new ObjectId(id) })
 }
 
+interface ILibro {
+  titulo: string
+  autor: string
+  precio: number
+  stock: number
+}
+
+const actualizarLibro = async (id: ObjectId, actualizaciones: string[]) => {
+  const nuevaInfo: Partial<ILibro> = {}
+
+  // [--nombre, cien años de soledad, --precio, 100, --stock, 100]
+  for (let index = 0; index < actualizaciones.length; index = index + 2) {
+    const propiedadAActualizar = actualizaciones[index].replace("--", "")
+    const valoresDePropAActualizar = actualizaciones[index + 1]
+    console.log(propiedadAActualizar)
+    console.log(valoresDePropAActualizar)
+
+    if (propiedadAActualizar === "precio" || propiedadAActualizar === "stock") {
+      nuevaInfo[propiedadAActualizar] = +valoresDePropAActualizar
+    } else {
+      nuevaInfo[propiedadAActualizar as keyof ILibro] = valoresDePropAActualizar as never
+    }
+  }
+
+  collection.updateOne({ _id: id }, { $set: nuevaInfo })
+  return collection.findOne({ _id: id })
+}
+
 switch  (accion) {
      case "help":
                 console.log(`
@@ -58,8 +88,8 @@ switch  (accion) {
         console.log(await leerLibros())
         process.exit(1)
     case "update":
-        console.log("Actualizando Libro")
-        process.exit(1)
+        console.log(await actualizarLibro(id, argumentos.splice(2)))
+    process.exit(1)
     case "delete":
         console.log(await borrarLibro(new ObjectId(id)))
         process.exit(1)
