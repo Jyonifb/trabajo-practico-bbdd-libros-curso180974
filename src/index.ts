@@ -21,6 +21,7 @@ const collection = db.collection("libros")
 
 const argumentos = process.argv.splice(2)
 const accion = argumentos[0]
+const id = new ObjectId(argumentos[1])
 
 const leerLibros = async () => {
  const libros = await collection.find().toArray()
@@ -31,6 +32,10 @@ const agregarLibro = async (titulo: string, autor: string, precio: number, stock
    const nuevoLibro = {titulo, autor, stock, precio}
    const resultado = await collection.insertOne(nuevoLibro)
    return collection.findOne({_id: new ObjectId(resultado.insertedId) })
+}
+
+const borrarLibro = async (id: ObjectId) => {
+    return await collection.deleteOne({ _id: new ObjectId(id) })
 }
 
 switch  (accion) {
@@ -56,7 +61,7 @@ switch  (accion) {
         console.log("Actualizando Libro")
         process.exit(1)
     case "delete":
-        console.log("Borrando Libro")
+        console.log(await borrarLibro(new ObjectId(id)))
         process.exit(1)
     default:
         console.log("Comando inexistente, utilice Help para ver opciones")
