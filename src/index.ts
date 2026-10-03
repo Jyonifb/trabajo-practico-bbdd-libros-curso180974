@@ -104,9 +104,25 @@ const getLibros = async (id: string | undefined) => {
 //     return await Libro.find()
 // } 
 
-// const deleteLibro = async (id: string) => {
-//     return await Libro.find()
-// } 
+const deleteLibro = async (id: string | undefined) => {
+    try {
+    const validateHex = /^[0-9a-fA-F]+$/
+
+    if (!id){
+        await Libro.deleteMany({}, { titulo: 1, _id: 1 })
+        return "All books deleted"
+    }
+
+    const deleteLibro = await Libro.findByIdAndDelete(id)
+
+    if (!deleteLibro) throw generateError("Libro not found", "LibroNotFound")
+
+    return deleteLibro
+    } catch (error) {
+      const e = error as Error
+       return handleError(e)
+    }
+} 
 
 const main = async () => {
     connectDb(URI_DB)
@@ -114,18 +130,17 @@ const main = async () => {
     switch (action) {
         case "info":
             console.log(`
-                showAll → para leer los productos
-                showone → para leer los productos
+                show → para leer los productos
                 create data → para crear un producto
                 update id data → para actualizar un producto
                 delete id → para borrar un producto
             `)
         break
-        // case "showAll":
-        //     console.log(await showLibros())
-        // break
-        case "showOne":
+        case "show":
             console.log(await getLibros(args[1]))
+        break
+        case "delete":
+            console.log(await deleteLibro(args[1]))
         break
 
     }
