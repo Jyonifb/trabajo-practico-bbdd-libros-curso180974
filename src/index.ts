@@ -131,19 +131,52 @@ const createLibro = async (data: string[]) => {
           newLibro.stock = value ? Number(value) : newLibro.stock
           break
         default:
-          throw generateError("Invalid data to create product", "InvalidData")
+          throw generateError("Invalid data to create Libro", "InvalidData")
       }
     }
     return await Libro.create(newLibro)
   } catch (error) {
     const e = error as Error
     return handleError(e)
-  }   return await Libro.find()
+  }  
 } 
 
-// const updateLibro = async (id: string, updates: string[]) => {
-//     return await Libro.find()
-// } 
+const updateLibro = async (id: string | undefined, updates: string[]) => {
+      try {
+    const data: Partial<ILibro> = {}
+
+    for (const update of updates) {
+      const [prop, value] = update.split("=")
+
+      if (!value) {
+        throw generateError(`Invalid data for ${prop}`, "InvalidData")
+      }
+
+      switch (prop) {
+        case "titulo":
+          data.titulo = value
+        break
+        case "autor":
+          data.autor = value
+          break
+        case "precio":
+          data.precio = +value
+          break
+        case "stock":
+          data.stock = +value
+        break
+        default:
+          throw generateError("Invalid data to update Libro", "InvalidData")
+      }
+    }
+
+    return await Libro.findByIdAndUpdate(id, data, { new: true })
+  } catch (error) {
+    const e = error as Error
+    return handleError(e)
+  }
+    
+} 
 
 const deleteLibro = async (id: string | undefined) => {
     try {
@@ -184,10 +217,14 @@ const main = async () => {
         case "delete":
             console.log(await deleteLibro(args[1]))
         break
-         case "create":
+        case "create":
             console.log(await createLibro(args.splice(1)))
         break
-
+        case "update":
+            console.log(await updateLibro(args[1], args.slice(2)))
+        break
+        default:
+        console.log("commands: <show | create | update | delete>")
     }
 
     await mongoose.disconnect()
