@@ -37,7 +37,7 @@ const libroSchema = new mongoose.Schema<ILibro>( {
   titulo: String,
   autor: String,
   precio: Number,
-  stock: Number
+  stock: Number,
 })
 
 // Modelo del libro
@@ -96,9 +96,50 @@ const getLibros = async (id: string | undefined) => {
 } 
 
 
-// const createLibro = async (data: ILibro) => {
-//     return await Libro.find()
-// } 
+const createLibro = async (data: string[]) => {
+   try {
+    // --name bicicleta --price 15000 --stock 10 --category deportes
+    const newLibro: ILibro = {
+      titulo: "titulo",
+      autor: "autor",
+      precio: 0,
+      stock: 0,  
+    }
+
+    if (data[0]?.split("=")[0] !== "titulo" || !data[0]?.split("=")[1]) {
+      console.log("Titulo is required")
+      return
+    }
+
+    // titulo="Metro 2033" autor="Dmitry Glukhovsky" precio=15000 stock=10 
+    for (let i = 0; i < data.length; i++) {
+      const prop = data[i]?.split("=") as string[]
+      const nameProp = prop[0]
+      const value = prop[1]
+
+      switch (nameProp) {
+        case "titulo":
+          newLibro.titulo = value as string
+          break
+        case "autor":
+          newLibro.autor = value ? value : newLibro.autor
+        break
+        case "precio":
+          newLibro.precio = value ? Number(value) : newLibro.precio
+          break
+        case "stock":
+          newLibro.stock = value ? Number(value) : newLibro.stock
+          break
+        default:
+          throw generateError("Invalid data to create product", "InvalidData")
+      }
+    }
+    return await Libro.create(newLibro)
+  } catch (error) {
+    const e = error as Error
+    return handleError(e)
+  }   return await Libro.find()
+} 
 
 // const updateLibro = async (id: string, updates: string[]) => {
 //     return await Libro.find()
@@ -124,6 +165,7 @@ const deleteLibro = async (id: string | undefined) => {
     }
 } 
 
+
 const main = async () => {
     connectDb(URI_DB)
 
@@ -141,6 +183,9 @@ const main = async () => {
         break
         case "delete":
             console.log(await deleteLibro(args[1]))
+        break
+         case "create":
+            console.log(await createLibro(args.splice(1)))
         break
 
     }
