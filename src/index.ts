@@ -1,15 +1,18 @@
 import mongoose from "mongoose"
-import { disconnect } from "node:cluster"
-process.loadEnvFile()
+//import { disconnect } from "node:cluster"
+import dotenv from "dotenv"
+import { ObjectId } from "mongodb"
+dotenv.config()
 
 //import {MongoClient, ObjectId} from "mongodb"
 
 const URI_DB = process.env.URI_DB || ""
 
+
 const connectDb = async (URI: string) => {
   try {
     await mongoose.connect(URI)
-    console.log("Conectado a MongoDb con éxito :)")
+    //console.log("Conectado a MongoDb con éxito :)")
   } catch (e) {
     console.log(`Error al conectar a MongoDb :(`)
   }
@@ -28,6 +31,8 @@ interface ILibro {
   stock: number
 }
 
+// Creación del schema para el libro
+
 const libroSchema = new mongoose.Schema<ILibro>( {
   titulo: String,
   autor: String,
@@ -35,13 +40,73 @@ const libroSchema = new mongoose.Schema<ILibro>( {
   stock: Number
 })
 
+// Modelo del libro
+
 const Libro = mongoose.model("libro", libroSchema)
 
 
 
-const getLibros = async () => {
-    return await Libro.find()
+// const showLibros = async () => {
+//     return await Libro.find()
+// } 
+
+// const getLibro = async (id: string | undefined) => {
+//     if (id!){
+//         return "ID is required"
+//     }
+//     //return await Libro.find()
+//     const foundLibro = await Libro.findById(id)
+//     return foundLibro
+// } 
+
+
+const generateError = (message: string, name: string) => {
+  const error = new Error(message)
+  error.name = name
+  return error
+}
+
+const handleError = (error: Error) => {
+  if (error.name === "CastError") {
+    return "Invalid ID"
+  }
+
+  return error.message
+}
+
+const getLibros = async (id: string | undefined) => {
+    try {
+    const validateHex = /^[0-9a-fA-F]+$/
+
+    if (!id){
+        return await Libro.find({}, { titulo: 1, _id: 1 })
+    }
+
+    const foundLibro = await Libro.findById(id)
+    //return await Libro.find()
+
+    if (!foundLibro) throw generateError("Libro not found", "LibroNotFound")
+
+    return foundLibro
+    } catch (error) {
+      const e = error as Error
+       return handleError(e)
+    }
+
 } 
+
+
+// const createLibro = async (data: ILibro) => {
+//     return await Libro.find()
+// } 
+
+// const updateLibro = async (id: string, updates: string[]) => {
+//     return await Libro.find()
+// } 
+
+// const deleteLibro = async (id: string) => {
+//     return await Libro.find()
+// } 
 
 const main = async () => {
     connectDb(URI_DB)
@@ -49,21 +114,28 @@ const main = async () => {
     switch (action) {
         case "info":
             console.log(`
-                read → para leer los productos
+                showAll → para leer los productos
+                showone → para leer los productos
                 create data → para crear un producto
                 update id data → para actualizar un producto
                 delete id → para borrar un producto
             `)
         break
-        case "read":
-            console.log(await getLibros())
+        // case "showAll":
+        //     console.log(await showLibros())
+        // break
+        case "showOne":
+            console.log(await getLibros(args[1]))
         break
+
     }
 
     await mongoose.disconnect()
 }
 
 main()
+
+
 /*const client = new MongoClient("mongodb://localhost:27017")
 
 const db = client.db("biblioteca")
